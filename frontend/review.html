@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>复习 · 错题本</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#fafbfc;--surface:#ffffff;--surface-hover:#f4f5f7;
+  --text:#1a1a2e;--text-secondary:#5f6b7a;--text-tertiary:#94a3b8;
+  --accent:#3b5ccc;--accent-hover:#3451b0;
+  --border:#e2e8f0;--border-light:#f1f5f9;
+  --success:#16a34a;--warning:#d97706;--danger:#dc2626;--purple:#7c3aed;
+  --radius:8px;--radius-lg:12px;
+  --shadow:0 1px 2px rgba(0,0,0,0.04),0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md:0 4px 12px rgba(0,0,0,0.04),0 2px 6px rgba(0,0,0,0.06);
+  --font:'Inter',-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+  --safe-top:env(safe-area-inset-top,0px);
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;font-size:14px;line-height:1.5;-webkit-tap-highlight-color:transparent}
+
+/* ── Subject badges ── */
+.badge-math{background:#eef1ff;color:var(--accent)}
+.badge-linear{background:#f3eeff;color:var(--purple)}
+.badge-ds{background:#ecfdf5;color:var(--success)}
+.badge-org{background:#fff7ed;color:var(--warning)}
+.badge-os{background:#fff7ed;color:var(--warning)}
+.badge-net{background:#fef2f2;color:var(--danger)}
+.kp-tag{display:inline-block;padding:2px 8px;margin:2px 4px 2px 0;background:var(--border-light);border-radius:4px;font-size:11px;color:var(--text-secondary)}
+.img-dl-btn{position:absolute;bottom:6px;right:6px;width:26px;height:26px;border-radius:6px;background:rgba(0,0,0,.45);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;text-decoration:none;cursor:pointer;border:none}
+
+/* ── Start screen ── */
+#reviewStartScreen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 52px);padding:40px 24px;text-align:center}
+.start-icon{font-size:48px;margin-bottom:16px;opacity:.9}
+.start-title{font-size:22px;font-weight:700;color:var(--text);margin-bottom:6px}
+.start-subtitle{font-size:13px;color:var(--text-secondary);margin-bottom:28px}
+.start-stats{display:flex;gap:24px;margin-bottom:32px}
+.start-stat{text-align:center}
+.start-stat .num{font-size:28px;font-weight:700;color:var(--accent);line-height:1.2}
+.start-stat .label{font-size:11px;color:var(--text-tertiary);margin-top:2px}
+.start-btn{width:100%;max-width:280px;padding:14px 20px;border:none;border-radius:var(--radius-lg);font-size:15px;font-weight:600;cursor:pointer;font-family:var(--font);margin-bottom:10px;transition:all .12s}
+.start-btn.primary{background:var(--accent);color:#fff}
+.start-btn.primary:hover{background:var(--accent-hover)}
+.start-btn.primary:active{transform:scale(.98)}
+.start-btn.secondary{background:var(--surface);color:var(--text-secondary);border:1px solid var(--border)}
+.start-btn.secondary:hover{border-color:var(--accent);color:var(--accent)}
+.start-btn.resume{background:#f0fdf4;color:var(--success);border:1px solid #bbf7d0}
+.start-btn.resume:hover{background:#dcfce7}
+.start-back{display:inline-flex;align-items:center;gap:4px;padding:8px 16px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text-secondary);font-size:12px;cursor:pointer;font-family:var(--font);margin-top:20px;transition:all .12s}
+.start-back:hover{border-color:var(--text-tertiary);color:var(--text)}
+
+/* ── Review mode ── */
+#reviewMode{display:none;flex-direction:column;background:var(--bg);min-height:calc(100vh - 52px)}
+#reviewMode.active{display:flex}
+.review-progress{height:2px;background:var(--border)}
+.review-progress .fill{height:100%;background:var(--accent);transition:width .25s ease}
+.review-top{display:flex;align-items:center;justify-content:center;gap:16px;padding:10px 24px;background:var(--surface);border-bottom:1px solid var(--border-light)}
+.review-top .back{color:var(--text-secondary);font-size:18px;cursor:pointer;padding:4px 8px;border:none;background:none;font-family:var(--font);line-height:1;min-height:36px;min-width:36px}
+.review-top .count{color:var(--text);font-size:14px;font-weight:600}
+.review-top .timer{color:var(--text-secondary);font-size:13px;font-weight:500;font-variant-numeric:tabular-nums;min-width:48px;text-align:center}
+.review-top .chip{padding:4px 12px;border-radius:12px;font-size:11px;font-weight:600;color:#fff;white-space:nowrap}
+.chip-math{background:var(--accent)}
+.chip-linear{background:var(--purple)}
+.chip-ds{background:var(--success)}
+.chip-org{background:var(--warning)}
+.chip-os{background:var(--warning)}
+.chip-net{background:var(--danger)}
+
+.review-stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 24px;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative}
+.review-img-wrap{width:100%;max-width:600px;max-height:45vh;margin-bottom:16px;display:none;align-items:center;justify-content:center}
+.review-img-wrap.show{display:flex}
+.review-img-wrap img{max-width:100%;max-height:45vh;object-fit:contain;border-radius:var(--radius-lg);background:var(--surface);border:1px solid var(--border-light)}
+.img-reveal-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:var(--surface);border:1px dashed var(--border);border-radius:var(--radius);color:var(--text-tertiary);font-size:13px;cursor:pointer;font-family:var(--font);margin-bottom:16px;transition:all .12s}
+.img-reveal-btn:hover{border-color:var(--accent);color:var(--accent)}
+.review-q-area{width:100%;max-width:600px;margin-bottom:20px}
+.review-q-area .q-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px 22px;box-shadow:var(--shadow);text-align:left}
+.review-q-area .q-meta{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:14px}
+.review-q-area .q-meta .badge{padding:4px 10px;border-radius:5px;font-size:11px;font-weight:600}
+.review-q-area .q-text{font-size:17px;color:var(--text);line-height:1.85;white-space:pre-wrap;word-break:break-word}
+.review-q-area .q-text p{margin:0 0 6px}
+.review-q-area .q-text p:last-child{margin-bottom:0}
+
+/* ── Option buttons ── */
+.review-options{display:flex;flex-direction:column;gap:8px;margin-top:16px;width:100%}
+.opt-btn{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);font-size:16px;font-weight:500;color:var(--text);cursor:pointer;transition:all .12s;font-family:var(--font);text-align:left;width:100%}
+.opt-btn:hover{border-color:var(--accent);background:#f8faff}
+.opt-btn .opt-letter{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:var(--border-light);font-weight:700;font-size:14px;flex-shrink:0;transition:all .15s}
+.opt-btn:active{transform:scale(.98)}
+.opt-btn.correct{border-color:var(--success);background:#f0fdf4;pointer-events:none}
+.opt-btn.correct .opt-letter{background:var(--success);color:#fff}
+.opt-btn.wrong{border-color:var(--danger);background:#fef2f2;pointer-events:none;animation:shake .4s ease}
+.opt-btn.wrong .opt-letter{background:var(--danger);color:#fff}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-4px)}40%{transform:translateX(4px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+.opt-btn.dimmed{opacity:.4;pointer-events:none}
+
+/* ── Edit answer ── */
+.edit-answer-btn{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text-secondary);cursor:pointer;font-size:11px;font-family:var(--font);margin-left:8px}
+.edit-answer-btn:hover{border-color:var(--warning);color:var(--warning)}
+.edit-answer-area{display:none;margin-top:12px;padding:14px;background:var(--border-light);border-radius:var(--radius-lg)}
+.edit-answer-area.show{display:block}
+.edit-answer-area input{width:100%;padding:10px 12px;border:2px solid var(--border);border-radius:var(--radius);font-size:15px;font-family:var(--font);margin-bottom:10px;outline:none}
+.edit-answer-area input:focus{border-color:var(--accent)}
+.edit-answer-area .ea-btns{display:flex;gap:8px}
+.ea-btn{padding:8px 16px;border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);border:none}
+.ea-save{background:var(--accent);color:#fff}
+.ea-save:hover{background:var(--accent-hover)}
+.ea-save:disabled{opacity:.5;cursor:not-allowed}
+.ea-cancel{background:var(--surface);color:var(--text-secondary);border:1px solid var(--border)}
+.review-hint{color:var(--text-tertiary);font-size:14px;text-align:center;padding:12px;animation:pulse 2.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+
+.review-answer{display:none;position:absolute;inset:0;background:var(--surface);overflow-y:auto;padding:20px 20px 140px;z-index:5;border-top:1px solid var(--border);-webkit-overflow-scrolling:touch}
+.review-answer.show{display:block}
+.review-answer h2{font-size:18px;font-weight:700;margin-bottom:16px;color:var(--text)}
+.review-answer .solution-text{font-size:16px;line-height:1.9;color:var(--text);font-weight:500;word-break:break-word;margin-bottom:14px}
+.review-answer .solution-text h3{font-size:16px;font-weight:700;color:var(--text);margin:20px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border-light)}
+.review-answer .solution-text h4{font-size:14px;font-weight:600;color:var(--text);margin:16px 0 6px}
+.review-answer .solution-text p{margin:6px 0}
+.review-answer .solution-text p+p{margin-top:10px}
+.review-answer .solution-text ol{padding-left:0;margin:10px 0;list-style:none;counter-reset:step}
+.review-answer .solution-text ol li{counter-increment:step;position:relative;padding:12px 14px 12px 44px;margin:8px 0;background:#f8faff;border-left:3px solid var(--accent);border-radius:0 var(--radius) var(--radius) 0}
+.review-answer .solution-text ol li::before{content:counter(step);position:absolute;left:10px;top:12px;width:24px;height:24px;background:var(--accent);color:#fff;border-radius:50%;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;line-height:1}
+.review-answer .solution-text ul{padding-left:22px;margin:8px 0}
+.review-answer .solution-text li{margin:4px 0;padding-left:2px}
+.review-answer .solution-text li::marker{color:var(--accent);font-weight:600}
+.review-answer .solution-text strong{color:var(--text)}
+.review-answer .solution-text code{background:var(--border-light);padding:1px 5px;border-radius:3px;font-size:12px}
+.review-answer .solution-text math{font-size:105%};
+.review-answer .answer-callout{margin-top:16px;padding:14px 16px;background:#f0fdf4;border-radius:var(--radius-lg);border-left:3px solid var(--success)}
+.review-answer .answer-callout .ac-label{font-size:11px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.review-answer .answer-callout .ac-value{font-size:20px;font-weight:700;color:var(--success)}
+.review-answer .answer-hint{text-align:center;color:var(--text-tertiary);font-size:13px;margin-top:20px}
+
+.review-bottom{display:none;padding:12px 18px;padding-bottom:calc(12px + var(--safe-bottom));background:linear-gradient(0deg,var(--bg) 60%,transparent);gap:10px;justify-content:center;z-index:10}
+.review-bottom.show{display:flex}
+.rate-btn{flex:1;max-width:130px;padding:14px 6px;border:none;border-radius:var(--radius-lg);font-size:13px;font-weight:600;cursor:pointer;transition:all .12s;display:flex;flex-direction:column;align-items:center;gap:3px;font-family:var(--font);min-height:60px}
+.rate-btn .r-icon{font-size:18px}
+.rate-btn .r-label{font-size:10px;opacity:.65}
+.rate-btn.again{background:#fef2f2;color:var(--danger);border:1px solid #fecaca}
+.rate-btn.again:active{background:#fee2e2}
+.rate-btn.fuzzy{background:#fff7ed;color:var(--warning);border:1px solid #fed7aa}
+.rate-btn.fuzzy:active{background:#ffedd5}
+.rate-btn.gotit{background:#f0fdf4;color:var(--success);border:1px solid #bbf7d0}
+.rate-btn.gotit:active{background:#dcfce7}
+
+.review-done{display:none;flex:1;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:40px}
+.review-done.show{display:flex}
+.review-done h2{font-size:20px;font-weight:700;color:var(--text);margin-bottom:6px}
+.review-done .done-detail{color:var(--text-secondary);font-size:13px;line-height:1.8;margin-bottom:18px}
+#reviewMode.rate-mode .review-hint{display:none}
+
+@media(max-width:480px){
+  .review-top{padding:8px 16px;gap:12px}
+  .review-stage{padding:16px 12px}
+  .review-q-area .q-card{padding:14px 14px}
+  .review-q-area .q-text{font-size:15px}
+  .opt-btn{font-size:14px;padding:10px 14px}
+  .opt-btn .opt-letter{width:28px;height:28px;font-size:12px}
+  .review-answer{padding:16px 16px 130px}
+  .review-answer h2{font-size:16px}
+  .review-answer .solution-text{font-size:15px}
+  .review-answer .solution-text ol li{padding:10px 12px 10px 38px}
+  .review-answer .solution-text ol li::before{left:8px;top:10px;width:22px;height:22px;font-size:11px}
+  .review-bottom{padding:10px 12px;padding-bottom:calc(10px + var(--safe-bottom));gap:8px}
+  .rate-btn{max-width:110px;padding:12px 4px;font-size:12px;min-height:54px}
+  .rate-btn .r-icon{font-size:16px}
+}
+</style>
+</head>
+<body>
+
+{% set nav_page = 'review' %}
+{% include '_nav.html' %}
+
+<!-- ── Start screen ── -->
+<div id="reviewStartScreen">
+  <div class="start-icon">📝</div>
+  <div class="start-title">复习模式</div>
+  <div class="start-subtitle">间隔重复 · 科学记忆</div>
+  <div class="start-stats">
+    <div class="start-stat"><div class="num" id="startTotal">-</div><div class="label">待复习</div></div>
+    <div class="start-stat"><div class="num" id="startMastered">-</div><div class="label">已掌握</div></div>
+    <div class="start-stat"><div class="num" id="startDue">-</div><div class="label">今日到期</div></div>
+  </div>
+  <button class="start-btn primary" onclick="beginReview()">开始复习</button>
+  <button class="start-btn resume" id="resumeBtn" style="display:none" onclick="resumeReview()">继续上次复习</button>
+  <button class="start-btn secondary" onclick="toggleSettings()">复习设置</button>
+  <div id="reviewSettings" style="display:none;width:100%;max-width:280px;margin-top:12px;padding:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);text-align:left;font-size:13px;color:var(--text-secondary)">
+    <div style="margin-bottom:10px;font-weight:600;color:var(--text)">复习范围</div>
+    <label class="toggle-row" id="filterAllLabel"><span>全部待复习题目</span><input type="radio" name="reviewFilter" value="all" checked onchange="updateFilterLabel()"><span class="toggle"></span></label>
+    <label class="toggle-row" id="filterDueLabel"><span>仅今日到期</span><input type="radio" name="reviewFilter" value="due" onchange="updateFilterLabel()"><span class="toggle"></span></label>
+    <div style="margin-top:12px;margin-bottom:10px;font-weight:600;color:var(--text)">自动显示解答</div>
+    <label class="toggle-row"><span>查看原题时自动显示</span><input type="checkbox" id="autoRevealImg" checked><span class="toggle"></span></label>
+  </div>
+  <button class="start-back" onclick="location.href=API+'cards'">← 返回题库</button>
+</div>
+
+<!-- ── Review mode ── -->
+<div id="reviewMode">
+  <div class="review-progress"><div class="fill" id="progressFill" style="width:0%"></div></div>
+  <div class="review-top">
+    <button class="back" id="reviewBackBtn" onclick="goBackCard()" style="display:none" title="上一题">←</button>
+    <button class="back" onclick="exitReview()" title="退出复习">✕</button>
+    <span class="count" id="reviewCount"></span>
+    <span class="timer" id="reviewTimer">00:00</span>
+    <span class="chip" id="reviewSubject"></span>
+  </div>
+
+  <div class="review-stage" id="reviewStage" style="display:none">
+    <button class="img-reveal-btn" id="imgRevealBtn" style="display:none">📷 查看原题</button>
+    <div class="review-img-wrap" id="reviewImageWrap"></div>
+    <div class="review-q-area" id="reviewQuestion"></div>
+    <div class="review-options" id="reviewOptions"></div>
+    <div class="review-hint" id="tapHint">点击屏幕查看解答</div>
+  </div>
+
+  <div class="review-answer" id="answerSheet"></div>
+
+  <div class="review-bottom" id="reviewBottom">
+    <button class="rate-btn again" onclick="rateAnswer('again')"><span class="r-icon">&#10005;</span>不认识<span class="r-label">再来一遍</span></button>
+    <button class="rate-btn fuzzy" onclick="rateAnswer('fuzzy')"><span class="r-icon">~</span>模糊<span class="r-label">再想想</span></button>
+    <button class="rate-btn gotit" onclick="rateAnswer('gotit')"><span class="r-icon">&#10003;</span>已掌握<span class="r-label">不用再练</span></button>
+  </div>
+
+  <div class="review-done" id="reviewDone">
+    <h2>复习完成</h2>
+    <div class="done-detail" id="doneStats"></div>
+    <button class="ea-btn ea-save" onclick="exitReview()" style="font-size:13px;padding:8px 20px;border-radius:var(--radius);cursor:pointer">返回</button>
+  </div>
+</div>
+
+<script>
+var API='{{ api_base }}';
+const BADGE={'高等数学':'badge-math','线性代数':'badge-linear','数据结构':'badge-ds','计算机组成原理':'badge-org','操作系统':'badge-os','计算机网络':'badge-net'};
+const CHIP={'高等数学':'chip-math','线性代数':'chip-linear','数据结构':'chip-ds','计算机组成原理':'chip-org','操作系统':'chip-os','计算机网络':'chip-net'};
+
+let allMistakes=[],_cardCache={};
+let reviewCards=[],reviewIndex=0,reviewDone=0,reviewFuzzy=0,reviewAgain=0,answerRevealed=false,reviewImgRevealed=false;
+let reviewHistory=[],cardStartTime=0;
+let timerStart=0,timerInterval=null;
+let currentSessionId=null;
+
+// ── Init ──
+
+(async function(){
+  // Auth check
+  try{
+    const r=await fetch(API+'api/me');
+    const me=await r.json();
+    if(!me){location.href=API+'login';return}
+    document.getElementById('navUser').textContent=me.username;
+  }catch(e){location.href=API+'login';return}
+
+  // Load all mistakes for stats + review
+  try{
+    const r=await fetch(API+'api/mistakes?all=1');
+    allMistakes=await r.json();
+    allMistakes.forEach(m=>{_cardCache[m.id]=m});
+  }catch(e){}
+
+  // Render stats on start screen
+  const dueCards=allMistakes.filter(m=>m.mastery!=='mastered');
+  const masteredCards=allMistakes.filter(m=>m.mastery==='mastered');
+  const today=new Date().toISOString().split('T')[0];
+  const dueToday=dueCards.filter(m=>!m.next_review_at||m.next_review_at<=today);
+  document.getElementById('startTotal').textContent=dueCards.length;
+  document.getElementById('startMastered').textContent=masteredCards.length;
+  document.getElementById('startDue').textContent=dueToday.length;
+
+  // Check for saved review state → show resume button
+  if(checkReviewState()){
+    const s=JSON.parse(localStorage.getItem('reviewState'));
+    document.getElementById('resumeBtn').style.display='block';
+    document.getElementById('resumeBtn').textContent=`继续上次复习（第${s.index}/${s.cardIds.length}题）`;
+  }
+
+  // Show start screen
+  document.getElementById('reviewStartScreen').style.display='flex';
+})();
+
+// ── Start screen actions ──
+
+function beginReview(){
+  document.getElementById('reviewStartScreen').style.display='none';
+  document.getElementById('reviewMode').classList.add('active');
+  startReview();
+}
+
+function resumeReview(){
+  document.getElementById('reviewStartScreen').style.display='none';
+  document.getElementById('reviewMode').classList.add('active');
+  restoreReviewState().then(ok=>{
+    if(ok){
+      document.getElementById('reviewStage').style.display='flex';
+      document.getElementById('reviewDone').classList.remove('show');
+      showQuestion();
+    }else{
+      startReview();
+    }
+  });
+}
+
+function toggleSettings(){
+  const s=document.getElementById('reviewSettings');
+  s.style.display=s.style.display==='none'?'block':'none';
+}
+
+function updateFilterLabel(){
+  // Just updates UI; actual filtering happens in startReview()
+}
+
+// ── Exit ──
+
+function exitReview(){
+  saveReviewState();
+  clearInterval(timerInterval);
+  if(currentSessionId){
+    fetch(API+'api/review/end',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_id:currentSessionId,cards_reviewed:reviewIndex,cards_mastered:reviewDone})}).catch(()=>{});
+    currentSessionId=null;
+  }
+  // Hide review mode, show start screen
+  document.getElementById('reviewMode').classList.remove('active');
+  document.getElementById('reviewDone').classList.remove('show');
+  document.getElementById('reviewStage').style.display='none';
+  document.getElementById('answerSheet').classList.remove('show');
+  document.getElementById('reviewBottom').classList.remove('show');
+  document.getElementById('reviewMode').classList.remove('rate-mode');
+  // Refresh stats
+  const dueCards=allMistakes.filter(m=>m.mastery!=='mastered');
+  const masteredCards=allMistakes.filter(m=>m.mastery==='mastered');
+  const today=new Date().toISOString().split('T')[0];
+  const dueToday=dueCards.filter(m=>!m.next_review_at||m.next_review_at<=today);
+  document.getElementById('startTotal').textContent=dueCards.length;
+  document.getElementById('startMastered').textContent=masteredCards.length;
+  document.getElementById('startDue').textContent=dueToday.length;
+  // Show resume button if state saved
+  if(checkReviewState()){
+    const s=JSON.parse(localStorage.getItem('reviewState'));
+    document.getElementById('resumeBtn').style.display='block';
+    document.getElementById('resumeBtn').textContent=`继续上次复习（第${s.index}/${s.cardIds.length}题）`;
+  }
+  document.getElementById('reviewStartScreen').style.display='flex';
+}
+
+function logout(){
+  fetch(API+'api/auth/logout',{method:'POST'}).finally(()=>{location.href=API+'login'});
+}
+
+// ── Helpers ──
+
+function content(m,field,raw){if(raw)return m[field]||'';return m[field+'_html']||m[field]||''}
+function renderField(m,field,raw){return renderMd(content(m,field,raw))}
+
+function stripMd(text){
+  if(!text)return'';
+  let t=text;
+  t=t.replace(/\$\$?/g,'');
+  t=t.replace(/\\frac\{([^}]*)}\{([^}]*)}/g,'($1)/($2)');
+  t=t.replace(/\\infty/g,'∞');t=t.replace(/\\to/g,'→');t=t.replace(/\\lim/g,'lim');
+  t=t.replace(/\\cdot/g,'·');t=t.replace(/\\times/g,'×');t=t.replace(/\\pm/g,'±');
+  t=t.replace(/\\geq/g,'≥');t=t.replace(/\\leq/g,'≤');t=t.replace(/\\neq/g,'≠');
+  t=t.replace(/\\approx/g,'≈');t=t.replace(/\\sum/g,'Σ');t=t.replace(/\\int/g,'∫');
+  t=t.replace(/\\alpha/g,'α');t=t.replace(/\\beta/g,'β');t=t.replace(/\\pi/g,'π');
+  t=t.replace(/\\theta/g,'θ');t=t.replace(/\\lambda/g,'λ');
+  t=t.replace(/\\[a-zA-Z]+/g,'');
+  t=t.replace(/[{}^_]/g,'');
+  t=t.replace(/\s+/g,' ').trim();
+  return t;
+}
+
+function escapeHtml(s){
+  const d=document.createElement('div');d.textContent=s;return d.innerHTML;
+}
+
+function renderMd(text){
+  if(!text)return'';
+  if(text.charAt(0)==='<'||text.includes('<math'))return text;
+  text=text.replace(/\\\\([a-zA-Z{])/g,'\\$1');
+  text=text.replace(/(?<!\displaystyle)\\(lim|sum|int|prod|coprod|bigcup|bigcap|bigvee|bigwedge|oint|iint|iiint|idotsint)(?![a-zA-Z])/g,'\\displaystyle\\$1');
+  try{return marked.parse(text)}catch(e){return text}
+}
+
+function renderMath(el){
+  if(!el)el=document.body;
+  try{renderMathInElement(el,{delimiters:[{left:'$',right:'$',display:false},{left:'$$',right:'$$',display:true}],throwOnError:false})}catch(e){}
+}
+
+function setContent(el,html){
+  el.style.visibility='hidden';
+  el.innerHTML=html;
+  renderMath(el);
+  el.style.visibility='';
+}
+
+function updateTimer(){
+  const elapsed=Math.floor((Date.now()-timerStart)/1000);
+  const m=String(Math.floor(elapsed/60)).padStart(2,'0');
+  const s=String(elapsed%60).padStart(2,'0');
+  document.getElementById('reviewTimer').textContent=m+':'+s;
+}
+
+// ── Review flow ──
+
+async function startReview(){
+  if(!allMistakes.length)try{const r=await fetch(API+'api/mistakes?all=1');allMistakes=await r.json()}catch(e){}
+
+  // Apply filter from settings
+  const filterEl=document.querySelector('input[name="reviewFilter"]:checked');
+  const filter=filterEl?filterEl.value:'all';
+  const today=new Date().toISOString().split('T')[0];
+
+  if(filter==='due'){
+    reviewCards=allMistakes.filter(m=>m.mastery!=='mastered'&&(!m.next_review_at||m.next_review_at<=today));
+  }else{
+    reviewCards=allMistakes.filter(m=>m.mastery!=='mastered');
+  }
+
+  if(!reviewCards.length){
+    document.getElementById('reviewStage').style.display='none';
+    document.getElementById('reviewDone').classList.add('show');
+    document.getElementById('doneStats').innerHTML=filter==='due'?'今日到期的题目已全部掌握':'所有题目已全部掌握';
+    return;
+  }
+  reviewIndex=0;reviewDone=0;reviewFuzzy=0;reviewAgain=0;reviewImgRevealed=false;
+  reviewHistory=[];cardStartTime=Date.now();
+  timerStart=Date.now();clearInterval(timerInterval);timerInterval=setInterval(updateTimer,1000);updateTimer();
+  fetch(API+'api/review/start',{method:'POST'}).then(r=>r.json()).then(d=>{currentSessionId=d.session_id});
+  document.getElementById('reviewStage').style.display='flex';document.getElementById('reviewDone').classList.remove('show');
+  document.getElementById('answerSheet').classList.remove('show');document.getElementById('reviewBottom').classList.remove('show');
+  showQuestion();
+  saveReviewState();
+}
+
+function showQuestion(){
+  if(reviewIndex>=reviewCards.length){showDone();return}
+  answerRevealed=false;const m=reviewCards[reviewIndex];
+  cardStartTime=Date.now();
+  document.getElementById('reviewBackBtn').style.display=reviewHistory.length>0?'inline-flex':'none';
+  document.getElementById('progressFill').style.width=((reviewIndex)/reviewCards.length*100)+'%';
+  document.getElementById('reviewCount').textContent=`${reviewIndex+1} / ${reviewCards.length}`;
+  document.getElementById('reviewSubject').textContent=m.topic||m.subject;
+  document.getElementById('reviewSubject').className='chip '+(CHIP[m.subject]||'');
+
+  // Image
+  const imgWrap=document.getElementById('reviewImageWrap');
+  const imgBtn=document.getElementById('imgRevealBtn');
+  const autoReveal=document.getElementById('autoRevealImg')?.checked||false;
+  if(m.image_path){
+    const imgHTML=`<div style="position:relative"><img src="${API}uploads/${m.image_path}" style="width:100%;max-height:260px;object-fit:contain;border-radius:var(--radius);background:var(--border-light);cursor:zoom-in" onerror="this.parentElement.style.display='none'" onclick="event.stopPropagation();window.open(this.src)"><a class="img-dl-btn" href="${API}uploads/${m.image_path}" download title="下载原图" onclick="event.stopPropagation()">⬇</a></div>`;
+    imgWrap.innerHTML=imgHTML;
+    if(autoReveal||reviewImgRevealed){
+      imgWrap.classList.add('show');
+      imgBtn.textContent='🙈 隐藏原题';
+    }else{
+      imgWrap.classList.remove('show');
+      imgBtn.textContent='📷 查看原题';
+    }
+    reviewImgRevealed=false;
+    imgBtn.style.display='inline-flex';
+    imgBtn.onclick=function(e){
+      e.stopPropagation();
+      if(imgWrap.classList.contains('show')){
+        imgWrap.classList.remove('show');
+        imgBtn.textContent='📷 查看原题';
+      }else{
+        imgWrap.classList.add('show');
+        imgBtn.textContent='🙈 隐藏原题';
+      }
+    };
+  }else{
+    imgWrap.innerHTML='';
+    imgWrap.classList.remove('show');
+    imgBtn.style.display='none';
+  }
+
+  // Question text
+  const raw=m.problem_text||'';
+  const cleanText=stripOptionsText(raw);
+  const qt3=m.question_type||'calculation';
+  const qtLabel3={choice:'选择题',fill:'填空题','calculation':'计算题',essay:'简答题'}[qt3]||'计算题';
+  const qtColor3={choice:'#7c3aed',fill:'#d97706','calculation':'#3b5ccc',essay:'#16a34a'}[qt3]||'#3b5ccc';
+  setContent(document.getElementById('reviewQuestion'),
+    `<div class="q-card"><div class="q-meta"><span class="badge ${BADGE[m.subject]||''}">${m.subject} · ${m.topic}</span><span class="badge" style="background:${qtColor3}15;color:${qtColor3};margin-left:4px">${qtLabel3}</span></div><div class="q-text">${renderMd(cleanText||'点击查看解答')}</div></div>`);
+
+  // Options
+  const options=parseOptions(raw);
+  if(options.length){
+    renderOptions(options,m.answer||'');
+  }else{
+    document.getElementById('reviewOptions').innerHTML='';
+  }
+
+  document.getElementById('tapHint').style.display='block';
+  document.getElementById('answerSheet').classList.remove('show');
+  document.getElementById('reviewBottom').classList.remove('show');
+  document.getElementById('reviewMode').classList.remove('rate-mode');
+
+  if(!options.length){
+    document.getElementById('reviewStage').onclick=function(e){
+      if(e.target.closest('#reviewOptions .opt-btn'))return;
+      revealAnswer();
+    };
+  }else{
+    document.getElementById('reviewStage').onclick=null;
+  }
+}
+
+// ── Option parsing ──
+
+function stripOptionsText(text){
+  const optMarker=/(?:^|>|\n|\s{2,})(?:\(([A-D])\)|([A-D])[.\)、])/g;
+  const positions=[];
+  let m;
+  while((m=optMarker.exec(text))!==null){
+    positions.push({idx:m.index+1,letter:m[1]||m[2]});
+  }
+  for(let i=0;i<positions.length;i++){
+    let seq=0, expected='A'.charCodeAt(0);
+    for(let j=i;j<positions.length;j++){
+      if(positions[j].letter.charCodeAt(0)===expected){seq++; expected++;}
+      else break;
+    }
+    if(seq>=2){
+      const start=text.lastIndexOf('>',positions[i].idx-1);
+      if(start>=0) return cleanTrailingTags(text.slice(0,start+1));
+      const letter=positions[i].letter;
+      const cutIdx=text.indexOf('('+letter+')',positions[i].idx-3);
+      if(cutIdx>=0) return cleanTrailingTags(text.slice(0,cutIdx));
+      const cutIdx2=text.indexOf(letter+'.',positions[i].idx-3);
+      if(cutIdx2>=0) return cleanTrailingTags(text.slice(0,cutIdx2));
+      return cleanTrailingTags(text.slice(0,positions[i].idx-1));
+    }
+  }
+  const plain=text.replace(/<[^>]+>/g,'\n').replace(/&nbsp;/g,' ');
+  const lines=plain.split('\n').map(l=>l.trim()).filter(Boolean);
+  const lastLine=lines[lines.length-1]||'';
+  if(/^\s*[A-D][.\)、]/.test(lastLine)){
+    const inlineMatches=[...lastLine.matchAll(/\s*([A-D])[.\)、]/g)];
+    if(inlineMatches.length>=2){
+      const firstMarker=inlineMatches[0][0].trim();
+      const markerIdx=text.lastIndexOf('>'+firstMarker);
+      if(markerIdx>=0) return cleanTrailingTags(text.slice(0,markerIdx+1));
+      const fallbackIdx=text.lastIndexOf(firstMarker);
+      if(fallbackIdx>=0) return cleanTrailingTags(text.slice(0,fallbackIdx));
+    }
+  }
+  return text.trim();
+}
+
+function cleanTrailingTags(html){
+  return html.replace(/<p>\s*<\/p>\s*$/g,'').replace(/<p>\s*$/g,'').replace(/<br>\s*$/g,'').trim();
+}
+
+function parseOptions(text){
+  const plain=text.replace(/<[^>]+>/g,'\n').replace(/&nbsp;/g,' ');
+  const lines=plain.split('\n').map(l=>l.trim()).filter(Boolean);
+  const multiLineOpts=[];
+  let inBlock=false;
+  for(const line of lines){
+    let m=line.match(/^\s*\(([A-D])\)\s*(.+)$/);
+    if(!m) m=line.match(/^\s*([A-D])[.\)、]\s*(.+)$/);
+    if(m){
+      multiLineOpts.push({letter:m[1],text:m[2].trim()});
+      inBlock=true;
+    }else if(inBlock){
+      break;
+    }
+  }
+  if(multiLineOpts.length>=2){
+    return multiLineOpts.map(o=>({letter:o.letter,text:o.text.replace(/^[\s*_`]+|[\s*_`]+$/g,'')}));
+  }
+  const lastLine=lines[lines.length-1]||'';
+  if(/^\s*[A-D][.\)、]/.test(lastLine)){
+    const inlineRe=/\s*([A-D])[.\)、]\s*([^A-D]*?)(?=\s+[A-D][.\)、]|\s*$)/g;
+    const inlineMatches=[...lastLine.matchAll(inlineRe)];
+    if(inlineMatches.length>=2){
+      const fullMatch=lastLine.match(/^\s*(?:[A-D][.\)、]\s*[^A-D]*?(?:\s+[A-D][.\)、]\s*[^A-D]*?)*\s*)$/);
+      if(fullMatch){
+        return inlineMatches.map(m=>({letter:m[1],text:m[2].trim().replace(/^[\s*_`]+|[\s*_`]+$/g,'')}));
+      }
+    }
+  }
+  return [];
+}
+
+function renderOptions(options,correctAnswer){
+  const ca=(correctAnswer||'').trim().toUpperCase();
+  const container=document.getElementById('reviewOptions');
+  setContent(container,options.map(o=>{
+    const letter=o.letter.toUpperCase();
+    return `<button class="opt-btn" data-letter="${letter}" onclick="handleOptionClick('${letter}','${ca.replace(/'/g,"\\'")}')"><span class="opt-letter">${letter}</span><span>${renderMd(o.text)}</span></button>`;
+  }).join(''));
+}
+
+function handleOptionClick(letter,correctAnswer){
+  if(answerRevealed)return;
+  const ca=correctAnswer.trim().toUpperCase();
+  const buttons=document.querySelectorAll('#reviewOptions .opt-btn');
+  buttons.forEach(b=>b.style.pointerEvents='none');
+  const isCorrect=ca&&(letter===ca||ca.split('').includes(letter));
+  buttons.forEach(b=>{
+    const bl=b.dataset.letter;
+    if(ca&&(bl===ca||ca.includes(bl))) b.classList.add('correct');
+    if(bl===letter&&!isCorrect) b.classList.add('wrong');
+    else if(bl!==letter&&!isCorrect&&!(ca&&(bl===ca||ca.includes(bl)))) b.classList.add('dimmed');
+  });
+  document.getElementById('reviewStage').onclick=null;
+  document.getElementById('tapHint').style.display='none';
+  const delay=isCorrect?400:650;
+  setTimeout(()=>revealAnswer(),delay);
+}
+
+function revealAnswer(){
+  if(answerRevealed)return;answerRevealed=true;
+  const m=reviewCards[reviewIndex],kps=JSON.parse(m.knowledge_points||'[]');
+  const cardSec=Math.floor((Date.now()-cardStartTime)/1000);
+  const cardTime=cardSec<60?`${cardSec}秒`:`${Math.floor(cardSec/60)}分${cardSec%60}秒`;
+  document.getElementById('tapHint').style.display='none';
+  document.getElementById('reviewMode').classList.add('rate-mode');
+  const ansHtml=m.answer?`<div class="answer-callout"><div class="ac-label">答案 <button class="edit-answer-btn" onclick="startEditAnswer(${m.id},'${(m.answer||'').replace(/'/g,"\\'")}')">✏️ 纠错</button></div><div class="ac-value">${renderField(m,'answer')}</div><div class="edit-answer-area" id="editArea"></div></div>`:'';
+  setContent(document.getElementById('answerSheet'),`<h2>解答 <span style="font-size:11px;color:var(--text-tertiary);font-weight:400">· 用时 ${cardTime}</span></h2><div class="solution-text">${renderField(m,'solution')||'暂无解析'}</div>${ansHtml}${kps.length?`<div style="margin-top:12px">${kps.map(k=>`<span class="kp-tag">${k}</span>`).join('')}</div>`:''}<div class="answer-hint">请评估你的掌握程度</div>`);
+  document.getElementById('answerSheet').classList.add('show');document.getElementById('reviewBottom').classList.add('show');
+  document.getElementById('reviewStage').onclick=null;
+  saveReviewState();
+}
+
+// ── Rating ──
+
+function rateAnswer(rating){
+  const m=reviewCards[reviewIndex];if(!m)return;
+  reviewHistory.push({index:reviewIndex,revealed:answerRevealed,img:document.getElementById('reviewImageWrap').classList.contains('show')});
+  if(rating==='gotit')reviewDone++;
+  else if(rating==='fuzzy')reviewFuzzy++;
+  else reviewAgain++;
+  fetch(API+'api/mistakes/'+m.id+'/rate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rating})});
+  reviewIndex++;reviewImgRevealed=false;
+  document.getElementById('answerSheet').classList.remove('show');
+  document.getElementById('reviewBottom').classList.remove('show');
+  saveReviewState();
+  setTimeout(showQuestion,150);
+}
+
+function goBackCard(){
+  if(!reviewHistory.length)return;
+  const prev=reviewHistory.pop();
+  reviewIndex=prev.index;
+  answerRevealed=false;
+  reviewImgRevealed=prev.img;
+  document.getElementById('answerSheet').classList.remove('show');
+  document.getElementById('reviewBottom').classList.remove('show');
+  saveReviewState();
+  showQuestion();
+}
+
+function showDone(){
+  clearInterval(timerInterval);clearReviewState();
+  reviewHistory=[];
+  if(currentSessionId){
+    fetch(API+'api/review/end',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_id:currentSessionId,cards_reviewed:reviewIndex,cards_mastered:reviewDone})});
+    currentSessionId=null;
+  }
+  document.getElementById('progressFill').style.width='100%';document.getElementById('reviewCount').textContent='完成';
+  document.getElementById('reviewSubject').textContent='';
+  document.getElementById('reviewStage').style.display='none';
+  document.getElementById('answerSheet').classList.remove('show');document.getElementById('reviewBottom').classList.remove('show');
+  document.getElementById('reviewDone').classList.add('show');
+  document.getElementById('doneStats').innerHTML=`已掌握 <b>${reviewDone}</b> 道<br>有点模糊 <b>${reviewFuzzy}</b> 道<br>还需练习 <b>${reviewAgain}</b> 道`;
+}
+
+// ── Persistence ──
+
+function checkReviewState(){
+  const raw=localStorage.getItem('reviewState');
+  if(!raw)return false;
+  try{
+    const s=JSON.parse(raw);
+    if(Date.now()-s.ts>3600000){clearReviewState();return false}
+    if(!s.cardIds||!s.cardIds.length){clearReviewState();return false}
+    return true;
+  }catch(e){clearReviewState();return false}
+}
+
+function saveReviewState(){
+  if(!reviewCards.length)return;
+  localStorage.setItem('reviewState',JSON.stringify({
+    cardIds:reviewCards.map(m=>m.id),
+    index:reviewIndex, done:reviewDone, fuzzy:reviewFuzzy, again:reviewAgain,
+    timerStart:timerStart, ts:Date.now(),
+    imgRevealed:document.getElementById('reviewImageWrap').classList.contains('show'),
+    history:reviewHistory
+  }));
+}
+
+function clearReviewState(){localStorage.removeItem('reviewState')}
+
+async function restoreReviewState(){
+  const raw=localStorage.getItem('reviewState');
+  if(!raw)return false;
+  try{
+    const s=JSON.parse(raw);
+    if(Date.now()-s.ts>3600000){clearReviewState();return false}
+    if(!s.cardIds||!s.cardIds.length){clearReviewState();return false}
+    const missing=s.cardIds.some(id=>!_cardCache[id]);
+    if(missing||!allMistakes.length){
+      try{
+        const r=await fetch(API+'api/mistakes?all=1');
+        allMistakes=await r.json();
+        allMistakes.forEach(m=>{_cardCache[m.id]=m});
+      }catch(e){clearReviewState();return false}
+    }
+    reviewCards=s.cardIds.map(id=>_cardCache[id]).filter(Boolean);
+    if(!reviewCards.length){clearReviewState();return false}
+    reviewIndex=s.index;reviewDone=s.done;reviewFuzzy=s.fuzzy;reviewAgain=s.again;
+    timerStart=s.timerStart||Date.now();answerRevealed=false;
+    reviewImgRevealed=!!s.imgRevealed;
+    reviewHistory=s.history||[];
+    cardStartTime=Date.now();
+    clearInterval(timerInterval);
+    timerInterval=setInterval(updateTimer,1000);
+    updateTimer();
+    return true;
+  }catch(e){clearReviewState();return false}
+}
+
+// ── Edit answer in review ──
+
+function startEditAnswer(mistakeId,currentAnswer){
+  const area=document.getElementById('editArea');
+  area.innerHTML=`
+    <input type="text" id="editAnswerInput" value="${currentAnswer.replace(/"/g,'&quot;')}" placeholder="输入正确答案">
+    <div class="ea-btns">
+      <button class="ea-btn ea-save" id="eaSaveBtn" onclick="saveEditAnswer(${mistakeId})">🔄 AI 重新解析</button>
+      <button class="ea-btn ea-cancel" onclick="cancelEditAnswer()">取消</button>
+    </div>
+  `;
+  area.classList.add('show');
+  document.getElementById('editAnswerInput').focus();
+}
+
+function cancelEditAnswer(){
+  document.getElementById('editArea').classList.remove('show');
+  document.getElementById('editArea').innerHTML='';
+}
+
+async function pollReanalyze(taskId, btn, onDone){
+  let dots=0;
+  const tick=()=>{dots=(dots%3)+1;btn.textContent='⏳ AI 解析中'+'.'.repeat(dots);};
+  tick();
+  const interval=setInterval(tick,800);
+  try{
+    const start=Date.now();
+    while(Date.now()-start<300000){
+      await new Promise(r=>setTimeout(r,1500));
+      const sr=await fetch(`${API}api/reanalyze/${taskId}/status`);
+      if(!sr.ok)continue;
+      const st=await sr.json();
+      if(st.status==='done'){
+        clearInterval(interval);
+        btn.textContent='✅ 完成';
+        onDone(st.result);
+        setTimeout(()=>{btn.disabled=false;btn.textContent='🔄 AI 重新解析';},2000);
+        return;
+      }
+      if(st.status==='error'){clearInterval(interval); throw new Error(st.error||'重解析失败');}
+    }
+    throw new Error('重解析超时');
+  }catch(e){
+    clearInterval(interval);
+    btn.disabled=false;
+    btn.textContent='🔄 AI 重新解析';
+    alert('重解析失败: '+e.message);
+  }
+}
+
+async function saveEditAnswer(mistakeId){
+  const input=document.getElementById('editAnswerInput');
+  const btn=document.getElementById('eaSaveBtn');
+  const newAnswer=input.value.trim();
+  if(!newAnswer)return;
+  btn.disabled=true;
+  btn.textContent='⏳ 提交中...';
+  try{
+    const r=await fetch(`${API}api/mistakes/${mistakeId}/reanalyze`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({answer:newAnswer})
+    });
+    if(!r.ok)throw new Error('请求失败');
+    const {task_id}=await r.json();
+    await pollReanalyze(task_id, btn, (updated)=>{
+      reviewCards[reviewIndex].answer=updated.answer;
+      reviewCards[reviewIndex].solution=updated.solution;
+      reviewCards[reviewIndex].knowledge_points=updated.knowledge_points;
+      cancelEditAnswer();
+      const m=reviewCards[reviewIndex],kps=JSON.parse(m.knowledge_points||'[]');
+      const ansHtml=`<div class="answer-callout"><div class="ac-label">答案 <button class="edit-answer-btn" onclick="startEditAnswer(${m.id},'${(m.answer||'').replace(/'/g,"\\'")}')">✏️ 纠错</button></div><div class="ac-value">${renderField(m,'answer')}</div><div class="edit-answer-area" id="editArea"></div></div>`;
+      setContent(document.getElementById('answerSheet'),`<h2>解答</h2><div class="solution-text">${renderField(m,'solution')||'暂无解析'}</div>${ansHtml}${kps.length?`<div style="margin-top:12px">${kps.map(k=>`<span class="kp-tag">${k}</span>`).join('')}</div>`:''}<div class="answer-hint">请评估你的掌握程度</div>`);
+    });
+  }catch(e){
+    btn.disabled=false;
+    btn.textContent='🔄 AI 重新解析';
+    alert('重解析失败: '+e.message);
+  }
+}
+</script>
+
+</body>
+</html>

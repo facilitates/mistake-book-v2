@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>错题本</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#fafbfc;--surface:#ffffff;
+  --text:#1a1a2e;--text-secondary:#5f6b7a;--text-tertiary:#94a3b8;
+  --accent:#3b5ccc;--accent-hover:#3451b0;
+  --border:#e2e8f0;--border-light:#f1f5f9;
+  --danger:#dc2626;--purple:#7c3aed;
+  --radius:8px;--radius-lg:12px;
+  --shadow:0 1px 2px rgba(0,0,0,0.04),0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md:0 4px 12px rgba(0,0,0,0.04),0 2px 6px rgba(0,0,0,0.06);
+  --font:'Inter',-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+  --safe-top:env(safe-area-inset-top,0px);
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;font-size:14px;line-height:1.5;-webkit-tap-highlight-color:transparent}
+
+/* ── Main ── */
+.main{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 52px - var(--safe-bottom));padding:24px 24px calc(24px + var(--safe-bottom))}
+.hero{margin-bottom:32px;text-align:center}
+.hero h1{font-size:22px;font-weight:700;margin-bottom:4px}
+.hero p{font-size:13px;color:var(--text-secondary)}
+
+/* ── Actions ── */
+.actions{display:flex;flex-direction:column;gap:12px;width:100%;max-width:340px}
+.btn{width:100%;padding:16px 24px;border-radius:var(--radius-lg);font-size:16px;font-weight:600;cursor:pointer;transition:all .12s;font-family:inherit;text-align:center;border:none;min-height:56px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-hover);transform:translateY(-1px);box-shadow:var(--shadow-md)}
+.btn-primary:active{transform:scale(.98)}
+.btn-secondary{background:var(--surface);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn-icon{font-size:20px}
+
+/* ── Upload hidden input ── */
+#uploadInput{display:none}
+
+/* ── Status ── */
+#status{font-size:12px;color:var(--text-secondary);text-align:center;margin-top:12px;min-height:18px}
+
+/* ── Responsive ── */
+@media(max-width:480px){
+  .main{padding:20px 16px calc(20px + var(--safe-bottom))}
+  .hero h1{font-size:20px}
+  .btn{font-size:15px;padding:14px 20px;min-height:52px}
+}
+</style>
+</head>
+<body>
+
+{% set nav_page = 'home' %}
+{% include '_nav.html' %}
+
+<main class="main">
+  <div class="hero">
+    <h1 id="heroTitle">今天学了什么？</h1>
+    <p id="heroSub">拍照上传错题，或开始复习已掌握的题目</p>
+  </div>
+  <div class="actions">
+    <input type="file" id="uploadInput" accept="image/*" multiple onchange="handleUpload(this)">
+    <button class="btn btn-primary" onclick="document.getElementById('uploadInput').click()">
+      <span class="btn-icon">📷</span> 上传题目
+    </button>
+    <button class="btn btn-secondary" onclick="location.href=API+'review'">
+      <span class="btn-icon">🔄</span> 开始复习
+    </button>
+  </div>
+  <div id="status"></div>
+</main>
+
+<script>
+var API='{{ api_base }}';
+// Daily rotating encouragements — pick by day-of-year
+const ENCOURAGEMENTS=[
+  '每一个今天，都是未来的你在求救',
+  '慢慢来，比较快',
+  '你背不下来的书，总有人能背下来',
+  '今天不学习，明天变垃圾',
+  '放弃不难，但坚持一定很酷',
+  '乾坤未定，你我皆是黑马',
+  '星光不问赶路人',
+  '没有人能让你输，除非你不想赢',
+  '你的对手都在翻书',
+  '最怕一生碌碌无为，还说平凡难能可贵',
+  '且视他人之疑目如盏盏鬼火，大胆去走你的夜路',
+  '半山腰太挤了，去山顶看看',
+  '你要悄悄拔尖，然后惊艳所有人',
+  '所谓无底深渊，下去也是前程万里',
+  '当你觉得晚了的时候，恰恰是最早的时候',
+  '没有一个冬天不可逾越',
+  '努力只能及格，拼命才能优秀',
+  '如果你知道去哪，全世界都会为你让路',
+  '煎和熬都是变美味的方式',
+  '总有人要赢的，为什么不能是你',
+  '今天翻的是书，明天数的是钱',
+  '吃得苦中苦，方为人上人',
+  '人生没有白走的路，每一步都算数',
+  '既然选择了远方，便只顾风雨兼程',
+  '别让未来的你，讨厌现在的自己',
+  '将来的你，一定会感谢现在拼命的自己',
+  '莫道君行早，更有早行人',
+  '你有多努力，就有多特殊',
+  '哪有什么一夜成名，其实都是百炼成钢',
+  '不走心的努力，都是在敷衍自己',
+  '熬过无人问津的日子，才有诗和远方'
+];
+(function(){
+  const dayOfYear=Math.floor((Date.now()-new Date(new Date().getFullYear(),0,0))/86400000);
+  document.getElementById('heroTitle').textContent=ENCOURAGEMENTS[dayOfYear%ENCOURAGEMENTS.length];
+})();
+
+async function init(){
+  try{const r=await fetch(API+'api/me');const me=await r.json();if(!me){location.href=API+'login';return};document.getElementById('navUser').textContent=me.username}
+  catch(e){location.href=API+'login';return}
+  loadStats();
+}
+
+async function loadStats(){
+  try{
+    const r=await fetch(API+'api/stats');const d=await r.json();
+    const due=d.due_today||0;
+    document.getElementById('heroSub').textContent=due
+      ?`还有 ${due} 道题目待复习，加油！`
+      :'所有题目均已掌握，厉害！';
+  }catch(e){}
+}
+
+async function handleUpload(input){
+  const files=[...input.files];if(!files.length)return;
+  const st=document.getElementById('status');
+  st.textContent=`上传 ${files.length} 张图片中…`;
+  const fd=new FormData();files.forEach(f=>fd.append('files',f));
+  try{
+    const r=await fetch(API+'api/upload',{method:'POST',body:fd});const d=await r.json();
+    if(!r.ok){st.textContent=d.error||'上传失败';return}
+    const tasks=d.tasks||[];let done=0,errors=[];
+    while(done+errors.length<tasks.length){
+      await new Promise(r=>setTimeout(r,2000));
+      const sr=await fetch(API+'api/tasks/status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tasks})});const st2=await sr.json();
+      done=0;errors=[];
+      for(const t of tasks){
+        const s=st2[t];if(!s)continue;
+        if(s.status==='done')done++;
+        else if(s.status==='error')errors.push(s.error||'未知错误');
+      }
+      st.textContent=`识别中… ${done+errors.length}/${tasks.length} (${done}完成)`;
+    }
+    if(errors.length)st.textContent=`完成: ${done}成功, ${errors.length}失败 — ${errors.join('; ')}`;
+    else{st.textContent=`✅ 成功添加 ${done} 道题目！`;setTimeout(()=>st.textContent='',3000)}
+  }catch(e){st.textContent='上传失败: '+(e.message||e)}
+  finally{input.value=''}
+}
+
+async function logout(){await fetch(API+'api/auth/logout',{method:'POST'});location.href=API+'login'}
+init();
+</script>
+
+{% include '_settings_modal.html' %}
+</body>
+</html>
