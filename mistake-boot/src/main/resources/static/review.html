@@ -250,9 +250,9 @@ let currentSessionId=null;
 (async function(){
   // Auth check
   try{
-    const r=await fetch(API+'me');
+    const r=await fetch(API+'auth/me');
     const me=await r.json();
-    if(!me){location.href='landing.html'+'login';return}
+    if(!me||me.code!==200){location.href='login.html';return}
     document.getElementById('navUser').textContent=me.username;
   }catch(e){location.href='landing.html'+'login';return}
 

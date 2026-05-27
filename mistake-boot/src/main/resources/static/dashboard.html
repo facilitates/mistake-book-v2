@@ -238,7 +238,7 @@ const COLORS={'高等数学':'#3b5ccc','线性代数':'#7c3aed','数据结构':'
 let pieChart,lineChart;
 
 async function init(){
-  try{const r=await fetch(API+'me');const me=await r.json();if(!me){location.href='landing.html'+'login';return};document.getElementById('navUser').textContent=me.username}
+  try{const r=await fetch(API+'auth/me');const me=await r.json();if(!me||me.code!==200){location.href='login.html';return};document.getElementById('navUser').textContent=me.username}
   catch(e){location.href='landing.html'+'login';return}
 
   try{
