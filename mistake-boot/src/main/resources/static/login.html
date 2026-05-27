@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>错题本</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#fafbfc;--surface:#ffffff;
+  --text:#1a1a2e;--text-secondary:#5f6b7a;--text-tertiary:#94a3b8;
+  --accent:#3b5ccc;--accent-hover:#3451b0;
+  --border:#e2e8f0;--danger:#dc2626;
+  --radius:8px;
+  --shadow-lg:0 10px 40px rgba(0,0,0,0.06),0 4px 12px rgba(0,0,0,0.05);
+  --font:'Inter',-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;-webkit-font-smoothing:antialiased;font-size:14px;padding:env(safe-area-inset-top) 16px var(--safe-bottom);-webkit-tap-highlight-color:transparent}
+
+.login-wrap{width:100%;max-width:380px}
+.login-header{text-align:center;margin-bottom:28px}
+.login-header h1{font-size:20px;font-weight:700;letter-spacing:-0.3px;color:var(--text);margin-bottom:4px}
+.login-header p{font-size:12px;color:var(--text-secondary)}
+
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px 22px;box-shadow:var(--shadow-lg)}
+.login-card h2{font-size:15px;font-weight:600;margin-bottom:16px;color:var(--text)}
+
+.field{margin-bottom:12px}
+.field label{display:block;font-size:11px;font-weight:600;color:var(--text-secondary);margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px}
+.field input{width:100%;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);font-size:14px;color:var(--text);outline:none;transition:border .15s,box-shadow .15s;font-family:var(--font);-webkit-appearance:none;min-height:42px}
+.field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,92,204,.1)}
+.field input::placeholder{color:var(--text-tertiary)}
+
+.btn{width:100%;padding:11px;border:none;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;transition:background .12s;font-family:var(--font);min-height:44px}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-hover)}
+.btn-primary:active{transform:scale(.98)}
+
+.error-msg{background:#fef2f2;color:var(--danger);padding:10px 12px;border-radius:var(--radius);font-size:12px;margin-bottom:12px;display:none;border:1px solid #fecaca}
+.error-msg.show{display:block}
+
+.switch-row{text-align:center;margin-top:12px;font-size:12px;color:var(--text-secondary)}
+.switch-row a{color:var(--accent);cursor:pointer;text-decoration:none;font-weight:600}
+.switch-row a:hover{text-decoration:underline}
+
+/* ── Responsive ── */
+@media(max-width:480px){
+  body{padding:16px 12px 16px}
+  .login-wrap{max-width:100%}
+  .login-header{margin-bottom:22px}
+  .login-header h1{font-size:18px}
+  .login-card{padding:20px 16px;border-radius:10px}
+}
+
+@media(max-width:360px){
+  .login-card{padding:16px 12px}
+}
+</style>
+</head>
+<body>
+
+<div class="login-wrap">
+  <div class="login-header">
+    <h1>错题本</h1>
+    <p>考研题库 · 私人复习系统</p>
+  </div>
+  <div class="login-card">
+    <h2 id="formTitle">登录</h2>
+    <div class="error-msg" id="error"></div>
+    <div class="field"><label>用户名</label><input id="username" placeholder="输入用户名" autocomplete="username" inputmode="text"></div>
+    <div class="field"><label>密码</label><input id="password" type="password" placeholder="输入密码" autocomplete="current-password"></div>
+    <button class="btn btn-primary" id="submitBtn" onclick="submitForm()">登录</button>
+    <div class="switch-row">
+      <span id="switchLabel">没有账号？</span> <a id="switchLink" onclick="toggleMode()">注册</a>
+    </div>
+  </div>
+</div>
+
+<script>
+var API='/api/v2/';
+let isLogin=true;
+function toggleMode(){
+  isLogin=!isLogin;
+  document.getElementById('formTitle').textContent=isLogin?'登录':'注册';
+  document.getElementById('submitBtn').textContent=isLogin?'登录':'注册';
+  document.getElementById('switchLabel').textContent=isLogin?'没有账号？':'已有账号？';
+  document.getElementById('switchLink').textContent=isLogin?'注册':'登录';
+  document.getElementById('error').classList.remove('show');
+}
+async function submitForm(){
+  const u=document.getElementById('username').value.trim(),p=document.getElementById('password').value;
+  if(!u||!p)return showError('请填写用户名和密码');
+  const url=isLogin?API+'auth/login':API+'auth/register';
+  try{
+    const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
+    const d=await r.json();
+    if(!r.ok){showError(d.error||'操作失败');return}
+    location.href='landing.html';
+  }catch(e){showError('网络错误')}
+}
+function showError(m){const e=document.getElementById('error');e.textContent=m;e.classList.add('show')}
+document.getElementById('password').addEventListener('keydown',e=>{if(e.key==='Enter')submitForm()});
+</script>
+</body>
+</html>

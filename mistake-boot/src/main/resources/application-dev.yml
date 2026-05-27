@@ -2,7 +2,7 @@
 spring:
   datasource:
     driver-class-name: org.sqlite.JDBC
-    url: jdbc:sqlite:${user.home}/mistake-book/mistakes.db
+    url: jdbc:sqlite:${user.home}/mistake-book/mistakes_v2.db
     # SQLite 不需要连接池验证
     hikari:
       connection-test-query: SELECT 1

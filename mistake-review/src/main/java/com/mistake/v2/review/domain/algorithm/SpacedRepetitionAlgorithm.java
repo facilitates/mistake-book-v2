@@ -3,12 +3,15 @@ package com.mistake.v2.review.domain.algorithm;
 import com.mistake.v2.common.enums.MasteryLevel;
 import com.mistake.v2.common.enums.Rating;
 
+import org.springframework.stereotype.Component;
+
 import java.time.LocalDate;
 
 /**
  * SM-2 spaced repetition algorithm implementation.
  * Based on the SuperMemo SM-2 algorithm by Piotr Woźniak.
  */
+@Component
 public class SpacedRepetitionAlgorithm {
 
     public record ReviewResult(int interval, double easeFactor, MasteryLevel newMastery, LocalDate nextReviewAt) {
