@@ -1,0 +1,33 @@
+# Maven
+target/
+*.jar
+*.war
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Env
+.env
+.env.local
+
+# SQLite
+*.db
+*.db-journal
+*.db-wal
+
+# Temp
+tmp/
+temp/
