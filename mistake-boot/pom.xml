@@ -12,8 +12,10 @@
     <name>mistake-boot</name>
     <description>启动模块：Spring Boot 入口 + 配置 + DB 迁移</description>
     <dependencies>
-        <dependency><groupId>com.mistake</groupId><artifactId>mistake-interfaces</artifactId></dependency>
-        <dependency><groupId>com.mistake</groupId><artifactId>mistake-infrastructure</artifactId></dependency>
+        <dependency><groupId>com.mistake</groupId><artifactId>mistake-auth</artifactId></dependency>
+        <dependency><groupId>com.mistake</groupId><artifactId>mistake-mistake</artifactId></dependency>
+        <dependency><groupId>com.mistake</groupId><artifactId>mistake-review</artifactId></dependency>
+        <dependency><groupId>com.mistake</groupId><artifactId>mistake-ai</artifactId></dependency>
         <dependency><groupId>com.github.xiaoymin</groupId><artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId></dependency>
         <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-test</artifactId><scope>test</scope></dependency>
     </dependencies>

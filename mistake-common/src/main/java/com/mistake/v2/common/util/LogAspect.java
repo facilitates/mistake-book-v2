@@ -33,7 +33,7 @@ public class LogAspect {
     /**
      * 切点：拦截 interfaces.controller 包下所有 public 方法
      */
-    @Pointcut("execution(* com.mistake.v2.interfaces.controller..*.*(..))")
+    @Pointcut("execution(* com.mistake.v2.*.interfaces.controller..*.*(..))")
     public void controllerPointcut() {
     }
 
